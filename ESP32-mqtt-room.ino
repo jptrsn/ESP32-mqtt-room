@@ -234,7 +234,7 @@ void reportDevice(BLEAdvertisedDevice advertisedDevice) {
 				JSONencoder["minor"] = minor;
 
 				JSONencoder["uuid"] = proximityUUID;
-				JSONencoder["id"] = proximityUUID + "-" + String(major) + "-0";
+				JSONencoder["id"] = proximityUUID + "-" + String(major) + "-" + String(minor);
 				JSONencoder["txPower"] = oBeacon.getSignalPower();
 				JSONencoder["distance"] = distance;
 
