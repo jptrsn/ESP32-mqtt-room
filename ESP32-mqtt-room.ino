@@ -31,7 +31,7 @@ extern "C" {
 #include "Settings_kitchen.h"
 
 BLEScan* pBLEScan;
-int scanTime = 3; //In seconds
+int scanTime = singleScanTime; //In seconds
 int waitTime = scanInterval; //In seconds
 bool updateInProgress = false;
 
@@ -305,10 +305,11 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 	void onResult(BLEAdvertisedDevice advertisedDevice) {
 
 		digitalWrite(LED_BUILTIN, LED_ON);
-		// Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
-		vTaskDelay(10 / portTICK_PERIOD_MS);
+		Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
+		if (mqttClient.connected()) {
+			reportDevice(advertisedDevice);
+		}
 		digitalWrite(LED_BUILTIN, !LED_ON);
-
 	}
 
 };
@@ -319,23 +320,10 @@ TaskHandle_t BLEScan;
 void scanForDevices(void * parameter) {
 	while(1) {
 		if (!updateInProgress && WiFi.isConnected() && (millis() - last > (waitTime * 1000) || last == 0)) {
-			// mqttClient.disconnect(true);
-			// xTimerStop(mqttReconnectTimer, 0); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
-	    Serial.print("Scanning...\t");
+	    Serial.print("Scanning...\n");
 			BLEScanResults foundDevices = pBLEScan->start(scanTime);
-	    Serial.printf("Scan done! Devices found: %d\t",foundDevices.getCount());
-			// mqttClient.connect();
-			// while (!mqttClient.connected()) {
-			// 	Serial.print(".");
-			// 	vTaskDelay(10 / portTICK_PERIOD_MS);
-			// }
-			for (uint32_t i = 0; i < foundDevices.getCount(); i++) {
-				if (mqttClient.connected()) {
-					reportDevice(foundDevices.getDevice(i));
-				}
-			}
+	    Serial.printf("Scan done! Devices found: %d\n",foundDevices.getCount());
 	    last = millis();
-			Serial.println("Reports sent");
 	  }
 	}
 }
@@ -397,10 +385,10 @@ void setup() {
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
-  pBLEScan->setActiveScan(true); //active scan uses more power, but get results faster
-	pBLEScan->setInterval(0x80);
-	pBLEScan->setWindow(0x10);
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(), scanWantDuplicates);
+  pBLEScan->setActiveScan(activeScan);
+	pBLEScan->setInterval(bleScanInterval);
+	pBLEScan->setWindow(bleScanWindow);
 
 	xTaskCreatePinnedToCore(
 		scanForDevices,
