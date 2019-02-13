@@ -305,11 +305,10 @@ class MyAdvertisedDeviceCallbacks: public BLEAdvertisedDeviceCallbacks {
 	void onResult(BLEAdvertisedDevice advertisedDevice) {
 
 		digitalWrite(LED_BUILTIN, LED_ON);
-		Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
-		if (mqttClient.connected()) {
-			reportDevice(advertisedDevice);
-		}
+		// Serial.printf("Advertised Device: %s \n", advertisedDevice.toString().c_str());
+		vTaskDelay(10 / portTICK_PERIOD_MS);
 		digitalWrite(LED_BUILTIN, !LED_ON);
+
 	}
 
 };
@@ -320,10 +319,23 @@ TaskHandle_t BLEScan;
 void scanForDevices(void * parameter) {
 	while(1) {
 		if (!updateInProgress && WiFi.isConnected() && (millis() - last > (waitTime * 1000) || last == 0)) {
-	    Serial.print("Scanning...\n");
+			// mqttClient.disconnect(true);
+			// xTimerStop(mqttReconnectTimer, 0); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
+	    Serial.print("Scanning...\t");
 			BLEScanResults foundDevices = pBLEScan->start(scanTime);
-	    Serial.printf("Scan done! Devices found: %d\n",foundDevices.getCount());
+	    Serial.printf("Scan done! Devices found: %d\t",foundDevices.getCount());
+			// mqttClient.connect();
+			// while (!mqttClient.connected()) {
+			// 	Serial.print(".");
+			// 	vTaskDelay(10 / portTICK_PERIOD_MS);
+			// }
+			for (uint32_t i = 0; i < foundDevices.getCount(); i++) {
+				if (mqttClient.connected()) {
+					reportDevice(foundDevices.getDevice(i));
+				}
+			}
 	    last = millis();
+			Serial.println("Reports sent");
 	  }
 	}
 }
