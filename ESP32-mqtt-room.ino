@@ -397,7 +397,7 @@ void setup() {
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks(), scanWantDuplicates);
+  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(activeScan);
 	pBLEScan->setInterval(bleScanInterval);
 	pBLEScan->setWindow(bleScanWindow);
