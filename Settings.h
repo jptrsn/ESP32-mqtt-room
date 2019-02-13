@@ -40,7 +40,7 @@
 #define scanWantDuplicates false // If false then during a singleScanTime period every detected device will be reported only once
 #define activeScan true // Active scan uses more power, but get results faster
 #define bleScanInterval 0x80 // (milliseconds) The time interval from when the Controller started its last LE scan until it begins the subsequent LE scan
-#define bleScanWindow 0x80 // (milliseconds) The duration of the LE scan, shall be less than or equal to bleScanInterval; if interval and window are equal then perform continuous scan
+#define bleScanWindow 0x10 // (milliseconds) The duration of the LE scan, shall be less than or equal to bleScanInterval; if interval and window are equal then perform continuous scan
 #define advertisementDuration 3 // Define the duration in seconds that the device should advertise as a beacon to other sensors
 
 // Maximum distance (in meters) to report. Devices that are calculated to be further than this distance in meters will not be reported
