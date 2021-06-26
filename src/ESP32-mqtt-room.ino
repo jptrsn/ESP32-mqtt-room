@@ -33,7 +33,7 @@ extern "C" {
 #include "BLEBeacon.h"
 #include "BLEEddystoneTLM.h"
 #include "BLEEddystoneURL.h"
-#include "Settings_f.h"
+#include "Settings.h"
 
 #ifdef htuSensorTopic
 	#define tempTopic htuSensorTopic "/temperature"
@@ -318,6 +318,25 @@ bool reportDevice(BLEAdvertisedDevice advertisedDevice) {
 	String mac_address = advertisedDevice.getAddress().toString().c_str();
 	mac_address.replace(":","");
 	mac_address.toLowerCase();
+
+
+	//Check scanned MAC Address against a list of allowed MAC Addresses
+
+	if (allowedListCheck) {
+		bool allowedListFound = false;
+		for (uint32_t x = 0; x < allowedListNumberOfItems; x++) {
+			if (mac_address == allowedList[x]) {
+				allowedListFound = true;
+			}
+		}
+
+		if (allowedListFound == false) {
+			return false;
+		}
+	}
+	// --------------
+
+
 	// Serial.print("mac:\t");
 	// Serial.println(mac_address);
 	int rssi = advertisedDevice.getRSSI();
@@ -346,11 +365,11 @@ bool reportDevice(BLEAdvertisedDevice advertisedDevice) {
 
 	 if (advertisedDevice.getServiceDataUUID().equals(BLEUUID(beaconUUID))==true) {  // found Eddystone UUID
 		// Serial.printf("is Eddystone: %d %s length %d\n", advertisedDevice.getServiceDataUUID().bitSize(), advertisedDevice.getServiceDataUUID().toString().c_str(),strServiceData.length());
+	       // Update distance variable for Eddystone BLE devices
+	    BLEBeacon oBeacon = BLEBeacon();
+	    distance = calculateDistance(rssi, oBeacon.getSignalPower());
+	    doc["distance"] = distance;
 
-		// Update distance variable for Eddystone BLE devices
-	  BLEBeacon oBeacon = BLEBeacon();
-	  distance = calculateDistance(rssi, oBeacon.getSignalPower());
-	  doc["distance"] = distance;
 
 		if (cServiceData[0]==0x10) {
 			 BLEEddystoneURL oBeacon = BLEEddystoneURL();
@@ -581,7 +600,6 @@ void setup() {
 
   BLEDevice::init("");
   pBLEScan = BLEDevice::getScan(); //create new scan
-  pBLEScan->setAdvertisedDeviceCallbacks(new MyAdvertisedDeviceCallbacks());
   pBLEScan->setActiveScan(activeScan);
 	pBLEScan->setInterval(bleScanInterval);
 	pBLEScan->setWindow(bleScanWindow);
