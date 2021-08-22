@@ -41,6 +41,20 @@ extern "C" {
 	#include "sensors/sensor_htu21d.h"
 #endif
 
+#ifdef batteryTopic
+	#define batteryPinValueTopic batteryTopic "/pinvalue"
+	#define batteryPinValueAverageTopic batteryTopic "/pinvalueavg"
+	#define batteryVoltageTopic batteryTopic "/voltage"
+	#define batteryChargeLevelTopic batteryTopic "/chargelevel"
+
+	#include <Pangodream_18650_CL.h>
+	#define ADC_PIN 35
+	#define CONV_FACTOR 1.7
+	#define READS 20
+	
+	Pangodream_18650_CL BL(ADC_PIN, CONV_FACTOR, READS);
+#endif
+
 static const int scanTime = singleScanTime;
 static const int waitTime = scanInterval;
 static const uint16_t beaconUUID = 0xFEAA;
@@ -133,6 +147,51 @@ void reportSensorValues() {
 
 #endif
 
+#ifdef batteryTopic
+
+void reportBatteryValues() {
+
+	int batteryPinValue = analogRead(ADC_PIN); // reference ADC_PIN instead?
+	char pinValue[5];
+	itoa(batteryPinValue, pinValue, 10);
+	Serial.print("Value from pin: ");
+	Serial.println(batteryPinValue);
+	if (mqttClient.publish(batteryPinValueTopic, 0, 0, pinValue) == true) {
+		Serial.printf("Battery Pin Value %s sent\t", pinValue);
+	}
+
+  	int batteryAveragePinValue = BL.pinRead();
+	char avgPinValue[5];
+	itoa(batteryAveragePinValue, avgPinValue, 10);
+  	Serial.print("Average value from pin: ");
+  	Serial.println(batteryAveragePinValue);
+  	if (mqttClient.publish(batteryPinValueAverageTopic, 0, 0, avgPinValue) == true) {
+  		Serial.printf("Battery Average Pin Value %s sent\t", avgPinValue);
+  	}
+  
+	float batteryVoltage = BL.getBatteryVolts();
+	char voltage[5];
+	dtostrf(batteryVoltage, 0, 2, voltage); // convert float to string with two decimal place precision
+	Serial.print("Volts: ");
+	Serial.println(batteryVoltage);
+	if (mqttClient.publish(batteryVoltageTopic, 0, 0, voltage) == true) {
+		Serial.printf("Battery Voltage %s sent\t", voltage);
+	}
+
+	int batteryChargeLevel = BL.getBatteryChargeLevel();
+	char chargeLevel[5];
+	itoa(batteryChargeLevel, chargeLevel, 10);
+	Serial.print("Charge level: ");
+	Serial.println(batteryChargeLevel);
+	Serial.println("");
+	if (mqttClient.publish(batteryChargeLevelTopic, 0, 0, chargeLevel) == true) {
+		Serial.printf("Battery Charge Level %s sent\t", chargeLevel);
+	}
+
+}
+
+#endif
+
 
 bool sendTelemetry(int deviceCount = -1, int reportCount = -1) {
 	StaticJsonDocument<256> tele;
@@ -159,6 +218,11 @@ bool sendTelemetry(int deviceCount = -1, int reportCount = -1) {
 	#ifdef htuSensorTopic
     reportSensorValues();
 	#endif
+
+	#ifdef batteryTopic
+		reportBatteryValues();
+	#endif
+
 
 	if (mqttClient.publish(telemetryTopic, 0, 0, teleMessageBuffer) == true) {
 		Serial.println("Telemetry sent");
