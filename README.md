@@ -1,5 +1,5 @@
 # DEPRECATED!!!
-This project is no longer in active development, and all information is here for archive purposes only. If you are interested in localized BLE tracking, [ESPresence](https://espresence.com) appears to be a good solution. The author of this project has no affiliation or experience with that project, so please direct all questions to the project developer(s).
+This project is no longer in active development, and all information is here for archive purposes only. If you are interested in localized BLE tracking, [ESPresense](https://espresense.com) appears to be a good solution. The author of this project has no affiliation or experience with that project, so please direct all questions to the project developer(s).
 
 See the pretty documentation at [https://jptrsn.github.io/ESP32-mqtt-room/](https://jptrsn.github.io/ESP32-mqtt-room/)
 
