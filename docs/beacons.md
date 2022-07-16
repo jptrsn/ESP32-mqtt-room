@@ -9,13 +9,16 @@ Generic beacon hardware should be compatible, provided it meets a beacon standar
 ## configuration.yaml
 Here is an example of how an entry into your `configuration.yaml` file should look:
 ```yaml
+# One sensor entry for each beacon you want to track
 sensor:
-
-# One entry for each beacon you want to track
   - platform: mqtt_room
     device_id: "fda50693a4e24fb1afcfc6eb07647825-5-0" # Note that major version must match, but any minor version will be ignored
     name: 'iBeacon Room Presence'
     state_topic: 'room_presence'
     timeout: 60
     away_timeout: 120
+
+sensor:
+  - platform: mqtt_room
+    device_id: "a1...
 ```
