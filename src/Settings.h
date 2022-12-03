@@ -50,6 +50,8 @@
 // MQTT topic for sensor values from HTU21D temperature and humidity sensor
 //#define htuSensorTopic "presence_nodes/" hostname "/sensor"
 
+// MQTT topic for batter values from 18650 battery
+//#define batteryTopic "presence_nodes/" hostname "/battery"
 
 //List of allowed MAC Addresses for MQTT Publish. All others will be ignored.
 //Feature is disabled by default.
